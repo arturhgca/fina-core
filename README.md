@@ -7,14 +7,18 @@ Focused on providing features for individuals with tax residence in Brazil.
 ## MVP
 ### Data input
 - Allocation YAML file
-- Operations YAML file
-- Currency exchanges YAML file
+- Operations CSV file
+- Currency exchanges CSV file
 - Value to invest
 
 ### Data fetch
-- Asset prices history (daily)
+- Asset prices history (weekly, starting from the first Friday where the oldest asset was held)
 - Current asset prices
 - Current exchange rates
+
+### Data storage
+- Configuration and basic state in a JSON file
+- Price history in a CSV file
 
 ### Asset types
 - Brazilian stocks and FIIs
