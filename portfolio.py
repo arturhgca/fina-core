@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Dict
 
 import yaml
-from pandas import DataFrame
+from pandas import DataFrame, read_csv, Series
 
 
 @dataclass
@@ -64,3 +64,45 @@ class PortfolioConfig:
                             allocation=wallet_attributes['allocation'],
                             items=items)
             self.wallets[wallet_name] = wallet
+
+
+class Portfolio:
+    MAIN_CURRENCY = 'BRL'
+
+    def __init__(self, config_file_path: str, ledger_file_path: str, currency_exchanges_file_path: str):
+        self.config: PortfolioConfig = PortfolioConfig(file_path=config_file_path)
+        self.ledger: DataFrame = read_csv(ledger_file_path)
+        self.currency_exchanges: DataFrame = read_csv(currency_exchanges_file_path)
+        self.currency_exchanges = self.currency_exchanges.set_index('name')
+
+    def calculate_balance(self) -> DataFrame:
+        df = DataFrame(columns=[
+            'symbol',
+            'avg_price',
+            'target',
+            'holding',
+            # 'current_price',
+            # 'gain',
+            # 'current_percent',
+            # 'to_invest_percent',
+            # 'total_current_value',
+            # 'to_invest',
+            # 'units_to_buy'
+        ])
+        df = df.set_index('symbol')
+
+        symbols = self.config.df.index.tolist()
+        for symbol in symbols:
+            target = self.config.df['allocation'][symbol]
+            operations = self.ledger.loc[self.ledger['symbol'] == symbol]
+            total_prices = Series(operations['quantity'] * operations['unit_price'])
+            if self.config.df['currency'][symbol] != self.MAIN_CURRENCY and not total_prices.empty:
+                exchanges = operations['currency_exchange'].values
+                rates = self.currency_exchanges['exchange_rate'][exchanges].values
+                total_prices = total_prices.multiply(rates)
+            total_price = total_prices.sum()
+            holding = operations['quantity'].sum()
+            avg_price = total_price / holding
+            df.loc[symbol] = [avg_price, target, holding]
+
+        return df

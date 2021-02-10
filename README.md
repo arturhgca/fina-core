@@ -7,9 +7,10 @@ Focused on providing features for individuals with tax residence in Brazil.
 ## MVP
 ### Data input
 * [X] Allocation YAML file
-* [ ] Operations CSV file
+* [X] Operations CSV file
 * [ ] Currency exchanges CSV file
 * [ ] Value to invest
+* [ ] Main currency
 
 ### Data fetch
 * [ ] Asset prices history (weekly, starting from the first Friday where the oldest asset was held)
