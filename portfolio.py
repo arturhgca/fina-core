@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Dict, List
+from typing import Dict
 
 import yaml
+from pandas import DataFrame
 
 
 @dataclass
@@ -31,24 +32,27 @@ class ItemView(AllocationMixin):
     wallet: str
 
 
-@dataclass
-class Portfolio:
-    wallets: Dict[str, Wallet]
+class PortfolioConfig:
+    def __init__(self, file_path: str):
+        self.wallets: Dict[str, Wallet] = {}
+        self._parse_allocations_file(file_path)
+        self.df: DataFrame = DataFrame()
+        self.flatten()
 
-    def flatten(self) -> List[ItemView]:
-        return [
-            ItemView(symbol=item.symbol,
-                     allocation=item.allocation * wallet.allocation,
-                     currency=item.currency,
-                     wallet=wallet.name)
+    def flatten(self):
+        list_of_dicts = [
+            {'symbol': item.symbol,
+             'allocation': item.allocation * wallet.allocation,
+             'currency': item.currency,
+             'wallet': wallet.name}
             for wallet in self.wallets.values()
             for item in wallet.items.values()
         ]
+        self.df = DataFrame(list_of_dicts, columns=['symbol', 'allocation', 'currency', 'wallet'])
+        self.df = self.df.set_index('symbol')
 
-    @classmethod
-    def load(cls, file_path: str) -> Portfolio:
+    def _parse_allocations_file(self, file_path: str):
         raw_portfolio = yaml.full_load(open(file_path))
-        wallets = {}
         for wallet_name, wallet_attributes in raw_portfolio.items():
             items = {}
             for item_symbol, item_attributes in wallet_attributes['items'].items():
@@ -59,5 +63,4 @@ class Portfolio:
             wallet = Wallet(name=wallet_name,
                             allocation=wallet_attributes['allocation'],
                             items=items)
-            wallets[wallet_name] = wallet
-        return cls(wallets=wallets)
+            self.wallets[wallet_name] = wallet
