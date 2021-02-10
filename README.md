@@ -8,7 +8,7 @@ Focused on providing features for individuals with tax residence in Brazil.
 ### Data input
 * [X] Allocation YAML file
 * [X] Operations CSV file
-* [ ] Currency exchanges CSV file
+* [X] Currency exchanges CSV file
 * [ ] Value to invest
 * [ ] Main currency
 
